@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3U to JSON Converter PRO</title>
+    <style>
+        :root {
+            --bg-color: #0d0e12;
+            --panel-bg: rgba(22, 24, 33, 0.8);
+            --accent-color: #00f2fe;
+            --accent-glow: #4facfe;
+            --text-color: #e2e8f0;
+            --border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 30px 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 
+                        0 0 30px rgba(79, 172, 254, 0.05);
+        }
+
+        h2 {
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, textarea :focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        textarea {
+            height: 150px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 15px 0;
+            color: #475569;
+            font-size: 13px;
+            position: relative;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            color: #000;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.4);
+        }
+
+        .clear-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            box-shadow: none;
+        }
+
+        .clear-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: none;
+        }
+
+        .output-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-badge {
+            font-size: 12px;
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--accent-color);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+        }
+
+        pre {
+            background: #060709;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            color: #38bdf8;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>M3U TO JSON CONVERTER</h2>
+    
+    <!-- Option 1: URL Input -->
+    <div class="input-group">
+        <label for="m3uUrl">M3U URL (CORS অনুমতি থাকা আবশ্যক)</label>
+        <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
+    </div>
+
+    <div class="divider">OR</div>
+
+    <!-- Option 2: Direct Text Input -->
+    <div class="input-group">
+        <label for="m3uContent">M3U Text Content (সরাসরি কোড পেস্ট করুন)</label>
+        <textarea id="m3uContent" placeholder="#EXTM3U&#10;#EXTINF:-1 tvg-name=&quot;Channel&quot; group-title=&quot;Sports&quot;,Sony PIX&#10;http://example.com/stream.m3u8"></textarea>
+    </div>
+
+    <div class="btn-container">
+        <button class="clear-btn" onclick="clearAll()">Clear</button>
+        <button onclick="processM3U()">Convert to JSON</button>
+    </div>
+
+    <!-- Output Box -->
+    <div class="output-container" id="outputArea">
+        <div class="output-header">
+            <span class="status-badge" id="channelCount">Channels: 0</span>
+            <button style="padding: 6px 15px; font-size: 12px; flex: none;" onclick="copyJson()">Copy JSON</button>
+        </div>
+        <pre id="jsonOutput"></pre>
+    </div>
+</div>
+
+<script>
+    async function processM3U() {
+        const urlInput = document.getElementById('m3uUrl').value.trim();
+        const textInput = document.getElementById('m3uContent').value.trim();
+        let m3uRawData = "";
+
+        if (urlInput) {
+            try {
+                const response = await fetch(urlInput);
+                if (!response.ok) throw new Error('Network response was not ok');
+                m3uRawData = await response.text();
+            } catch (error) {
+                alert("URL থেকে ডাটা আনতে সমস্যা হয়েছে। (CORS Block অথবা ভুল লিঙ্ক)। টেক্সট বক্সে পেস্ট করে ট্রাই করুন।");
+                return;
+            }
+        } else if (textInput) {
+            m3uRawData = textInput;
+        } else {
+            alert("অনুগ্রহ করে একটি M3U লিঙ্ক দিন অথবা টেক্সট পেস্ট করুন!");
+            return;
+        }
+
+        const jsonResult = parseM3U(m3uRawData);
+        
+        // UI আপডেট
+        document.getElementById('jsonOutput').textContent = JSON.stringify(jsonResult, null, 4);
+        document.getElementById('channelCount').textContent = `Total Channels: ${jsonResult.total_channels}`;
+        document.getElementById('outputArea').style.display = 'block';
+    }
+
+    function parseM3U(content) {
+        const lines = content.split('\n');
+        const channels = [];
+        let currentChannel = null;
+
+        const regexName = /tvg-name="([^"]+)"/;
+        const regexLogo = /tvg-logo="([^"]+)"/;
+        const regexGroup = /group-title="([^"]+)"/;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+
+            if (line.startsWith('#EXTINF:')) {
+                currentChannel = {};
+                
+                const nameMatch = line.match(regexName);
+                const logoMatch = line.match(regexLogo);
+                const groupMatch = line.match(regexGroup);
+                
+                // কমার পরের অংশটি ডিসপ্লে নাম
+                const commaIndex = line.lastIndexOf(',');
+                const displayName = commaIndex !== -1 ? line.substring(commaIndex + 1).trim() : "Unknown Channel";
+
+                currentChannel.name = displayName;
+                currentChannel.tvg_name = nameMatch ? nameMatch[1] : displayName;
+                currentChannel.logo = logoMatch ? logoMatch[1] : "";
+                currentChannel.category = groupMatch ? groupMatch[1] : "General";
+
+            } else if (line && !line.startsWith('#')) {
+                if (currentChannel) {
+                    currentChannel.url = line;
+                    channels.append ? null : channels.push(currentChannel);
+                    currentChannel = null;
+                }
+            }
+        }
+
+        return {
+            total_channels: channels.length,
+            channels: channels
+        };
+    }
+
+    function copyJson() {
+        const jsonText = document.getElementById('jsonOutput').textContent;
+        navigator.clipboard.writeText(jsonText);
+        alert("JSON copied to clipboard!");
+    }
+
+    function clearAll() {
+        document.getElementById('m3uUrl').value = '';
+        document.getElementById('m3uContent').value = '';
+        document.getElementById('outputArea').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
