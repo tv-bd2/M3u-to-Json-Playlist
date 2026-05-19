@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M3U to IPTV JSON Converter</title>
+    <title>M3U to Sorted IPTV JSON Converter</title>
     <style>
         :root {
             --bg-color: #0b0c10;
@@ -39,20 +39,26 @@
             border: 1px solid var(--border-color);
             border-radius: 20px;
             padding: 35px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 
-                        0 0 40px rgba(0, 242, 254, 0.05);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 242, 254, 0.05);
         }
 
         h2 {
             font-size: 24px;
             font-weight: 700;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             text-align: center;
             letter-spacing: 1.5px;
             background: linear-gradient(135deg, var(--accent-color), var(--accent-glow));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-transform: uppercase;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 30px;
         }
 
         .input-group {
@@ -66,7 +72,6 @@
             color: #4facfe;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         input[type="text"], textarea {
@@ -77,20 +82,19 @@
             padding: 14px;
             color: #fff;
             font-size: 14px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
         }
 
         input[type="text"]:focus, textarea:focus {
             outline: none;
             border-color: var(--accent-color);
             box-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
-            background: rgba(0, 0, 0, 0.6);
         }
 
         textarea {
             height: 180px;
             resize: vertical;
-            font-family: 'Fira Code', monospace;
+            font-family: 'Consolas', monospace;
         }
 
         .divider {
@@ -99,7 +103,6 @@
             color: #555;
             font-size: 14px;
             font-weight: bold;
-            position: relative;
         }
 
         .btn-container {
@@ -119,27 +122,18 @@
             font-size: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0, 242, 254, 0.2);
             text-transform: uppercase;
         }
 
         button:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 242, 254, 0.4);
-            filter: brightness(1.1);
         }
 
         .clear-btn {
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.15);
             color: #fff;
-            box-shadow: none;
-        }
-
-        .clear-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: none;
         }
 
         .output-container {
@@ -164,13 +158,6 @@
             font-weight: 600;
         }
 
-        .copy-btn {
-            padding: 8px 20px;
-            font-size: 13px;
-            flex: none;
-            border-radius: 6px;
-        }
-
         pre {
             background: #050608;
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -178,7 +165,7 @@
             padding: 25px;
             max-height: 450px;
             overflow-y: auto;
-            font-family: 'Consolas', 'Courier New', monospace;
+            font-family: 'Consolas', monospace;
             font-size: 14px;
             color: #00f2fe;
             white-space: pre-wrap;
@@ -189,9 +176,9 @@
 <body>
 
 <div class="container">
-    <h2>IPTV M3U to JSON Converter</h2>
+    <h2>Smart IPTV JSON Converter</h2>
+    <div class="subtitle">Auto-Sorting: Sports ➔ Bangla ➔ Indian ➔ Music ➔ Others</div>
     
-    <!-- URL Input -->
     <div class="input-group">
         <label for="m3uUrl">M3U Playlist URL</label>
         <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
@@ -199,30 +186,26 @@
 
     <div class="divider">OR</div>
 
-    <!-- Text Paste Input -->
     <div class="input-group">
         <label for="m3uContent">Paste M3U Raw Text</label>
-        <textarea id="m3uContent" placeholder="#EXTM3U&#10;#EXTINF:-1 tvg-logo=&quot;https://i.postimg.cc/nzbd170h/T-sports.png&quot;,T Sports&#10;https://tvsen7.aynaott.com/tsports-hd/index.m3u8"></textarea>
+        <textarea id="m3uContent" placeholder="#EXTM3U&#10;#EXTINF:-1 tvg-logo=&quot;url&quot;,T Sports&#10;https://tvsen7.aynaott.com/tsports-hd/index.m3u8"></textarea>
     </div>
 
-    <!-- Controls -->
     <div class="btn-container">
         <button class="clear-btn" onclick="clearAll()">Clear</button>
-        <button onclick="processM3U()">Generate Player JSON</button>
+        <button onclick="processM3U()">Generate & Sort JSON</button>
     </div>
 
-    <!-- JSON Output Area -->
     <div class="output-container" id="outputArea">
         <div class="output-header">
             <span class="status-badge" id="channelCount">Channels: 0</span>
-            <button class="copy-btn" onclick="copyJson()">Copy JSON</button>
+            <button style="padding: 8px 20px; font-size: 13px; flex: none; border-radius: 6px;" onclick="copyJson()">Copy JSON</button>
         </div>
         <pre id="jsonOutput"></pre>
     </div>
 </div>
 
 <script>
-    // আপনার প্লেয়ারের বেস গেটওয়ে লিঙ্ক
     const PLAYER_BASE_URL = "https://rs-player.netlify.app/jw-player?url=";
 
     async function processM3U() {
@@ -236,31 +219,30 @@
                 if (!response.ok) throw new Error('Network response failure');
                 m3uRawData = await response.text();
             } catch (error) {
-                alert("URL থেকে ফাইল লোড করা যায়নি (CORS সমস্যা হতে পারে)। টেক্সটটি কপি করে নিচের বক্সে পেস্ট করুন।");
+                alert("URL থেকে ফাইল লোড করা যায়নি। টেক্সটটি কপি করে নিচের বক্সে পেস্ট করুন।");
                 return;
             }
         } else if (textInput) {
             m3uRawData = textInput;
         } else {
-            alert("অনুগ্রহ করে একটি M3U লিঙ্ক দিন অথবা টেক্সট বক্সে ডাটা পেস্ট করুন!");
+            alert("অনুগ্রহ করে একটি M3U লিঙ্ক দিন বা টেক্সট পেস্ট করুন!");
             return;
         }
 
-        const jsonResult = parseM3UToCustomFormat(m3uRawData);
+        const sortedJsonResult = parseAndSortM3U(m3uRawData);
         
-        // রেজাল্ট UI-তে পাঠানো
-        document.getElementById('jsonOutput').textContent = JSON.stringify(jsonResult, null, 2);
-        document.getElementById('channelCount').textContent = `Total Channels: ${jsonResult.length}`;
+        document.getElementById('jsonOutput').textContent = JSON.stringify(sortedJsonResult, null, 2);
+        document.getElementById('channelCount').textContent = `Total Channels: ${sortedJsonResult.length}`;
         document.getElementById('outputArea').style.display = 'block';
     }
 
-    function parseM3UToCustomFormat(content) {
+    function parseAndSortM3U(content) {
         const lines = content.split('\n');
         const playlist = [];
         let currentItem = null;
 
-        // লোগো ধরার জন্য Regex
         const regexLogo = /tvg-logo="([^"]+)"/;
+        const regexGroup = /group-title="([^"]+)"/;
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
@@ -268,18 +250,20 @@
             if (line.startsWith('#EXTINF:')) {
                 currentItem = {};
                 
-                // লোগো এক্সট্রাক্ট করা
+                // লোগো এবং গ্রুপ ক্যাটাগরি এক্সট্রাক্ট করা
                 const logoMatch = line.match(regexLogo);
-                currentItem.image = logoMatch ? logoMatch[1] : "";
+                const groupMatch = line.match(regexGroup);
                 
-                // চ্যানেলের নাম এক্সট্রাক্ট করা (কমার পরের অংশ)
+                currentItem.image = logoMatch ? logoMatch[1] : "";
+                currentItem.rawGroup = groupMatch ? groupMatch[1].toLowerCase() : "";
+                
+                // নাম এক্সট্রাক্ট করা
                 const commaIndex = line.lastIndexOf(',');
                 const displayName = commaIndex !== -1 ? line.substring(commaIndex + 1).trim() : "Unnamed Channel";
                 currentItem.name = displayName;
 
             } else if (line && !line.startsWith('#')) {
                 if (currentItem) {
-                    // আপনার প্লেয়ারের প্রিফিক্স ইউআরএল যুক্ত করা হচ্ছে
                     currentItem.url = PLAYER_BASE_URL + line;
                     playlist.push(currentItem);
                     currentItem = null;
@@ -287,13 +271,56 @@
             }
         }
 
-        return playlist;
+        // --- স্মার্ট সর্টিং অ্যালগরিদম (Smart Sorting) ---
+        return playlist.sort((a, b) => {
+            return getPriority(a) - getPriority(b);
+        }).map(item => {
+            // ফাইনাল JSON থেকে ইন্টারনাল 'rawGroup' প্রোপার্টি বাদ দিয়ে ক্লিন করা
+            return {
+                name: item.name,
+                image: item.image,
+                url: item.url
+            };
+        });
+    }
+
+    // ক্যাটাগরি অনুযায়ী প্রায়োরিটি স্কোর নির্ধারণ (কম নম্বর = আগে থাকবে)
+    function getPriority(item) {
+        const name = item.name.toLowerCase();
+        const group = item.rawGroup;
+
+        // ১. স্পোর্টস চ্যানেল (Sports, Cricket, Football, T Sports, PTV Sports ইত্যাদি)
+        if (group.includes('sport') || name.includes('sport') || name.includes('vs') || name.includes('ipl') || name.includes('willow')) {
+            return 1;
+        }
+        
+        // ২. লোকাল বাংলা চ্যানেল (BTV, Ekattor, Somoy, Jamuna, Deepto, Bangla Vision, NTV ইত্যাদি)
+        // নোট: যদি ইন্ডিয়ান বাংলা আলাদা করতে চান, তবে বাংলাদেশি ইউনিক নাম এখানে ডিটেক্ট হবে
+        if (group.includes('bangla') || group.includes('bd') || name.includes('tv') || name.includes('news') || name.includes('vision') || name.includes('deepto') || name.includes('maasranga') || name.includes('btv') || name.includes('ekushe')) {
+            // কিন্তু এটি যদি ইন্ডিয়ান Zee বা Star গ্রুপের অংশ হয় তবে পরের ক্যাটাগরিতে যাবে
+            if (!name.includes('zee') && !name.includes('star') && !name.includes('jalsha') && !name.includes('sananda')) {
+                return 2;
+            }
+        }
+
+        // ৩. ইন্ডিয়ান বাংলা / ইন্ডিয়ান চ্যানেল (Zee Bangla, Star Jalsha, Sananda, Enterr10 ইত্যাদি)
+        if (group.includes('india') || name.includes('zee') || name.includes('star') || name.includes('jalsha') || name.includes('sananda') || name.includes('enterr10')) {
+            return 3;
+        }
+
+        // ৪. মিউজিক চ্যানেল (Music, Gaan, Songs)
+        if (group.includes('music') || name.includes('music') || name.includes('gaan') || name.includes('song')) {
+            return 4;
+        }
+
+        // ৫. বাকি অন্য যেকোনো চ্যানেল
+        return 5;
     }
 
     function copyJson() {
         const jsonText = document.getElementById('jsonOutput').textContent;
         navigator.clipboard.writeText(jsonText);
-        alert("JSON copied to clipboard successfully!");
+        alert("Sorted JSON copied to clipboard!");
     }
 
     function clearAll() {
