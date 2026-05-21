@@ -1,423 +1,575 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium IPTV Channel Parser</title>
+    <title>M3U to JSON Converter Ultra Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #0b0c10;
-            --card-bg: #1f2833;
-            --accent-neon: #00ffcc;
-            --accent-blue: #00a8ff;
-            --text-main: #ffffff;
-            --text-muted: #c5c6c7;
+            --bg-gradient: linear-gradient(135deg, #080b11 0%, #121824 100%);
+            --panel-bg: rgba(18, 24, 38, 0.65);
+            --panel-border: rgba(255, 255, 255, 0.06);
+            --accent-primary: #00f2fe;
+            --accent-secondary: #4facfe;
+            --accent-glow: rgba(0, 242, 254, 0.4);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --input-bg: rgba(7, 10, 15, 0.61);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
+            background: var(--bg-gradient);
             color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            color: var(--accent-neon);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-        }
-
-        .input-box-wrapper {
-            background-color: #151a21;
-            padding: 25px;
-            border-radius: 16px;
-            border: 1px solid rgba(0, 255, 204, 0.1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            margin-bottom: 40px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--accent-blue);
-        }
-
-        input[type="text"] {
-            width: 100%;
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 10px;
-            color: #fff;
-            padding: 15px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            transition: border-color 0.3s;
-            margin-bottom: 10px;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--accent-neon);
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
-        }
-
-        textarea {
-            width: 100%;
-            height: 150px;
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 10px;
-            color: #fff;
-            padding: 15px;
-            box-sizing: border-box;
-            resize: vertical;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.95rem;
-            transition: border-color 0.3s;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent-neon);
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
-        }
-
-        .divider {
-            text-align: center;
-            margin: 15px 0;
-            color: var(--text-muted);
-            font-weight: bold;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
             position: relative;
         }
 
-        .divider::before, .divider::after {
-            content: "";
+        /* Ambient Glow Background Effects */
+        body::before, body::after {
+            content: '';
             position: absolute;
-            top: 50%;
-            width: 45%;
-            height: 1px;
-            background-color: #30363d;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
+            z-index: -1;
+            opacity: 0.3;
+            filter: blur(40px);
         }
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
+        body::before { top: -100px; left: -100px; }
+        body::after { bottom: -100px; right: -100px; }
 
-        button {
-            background: linear-gradient(135deg, var(--accent-neon), var(--accent-blue));
-            border: none;
-            color: #0b0c10;
-            padding: 14px 30px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            border-radius: 10px;
-            cursor: pointer;
+        .container {
             width: 100%;
-            transition: all 0.3s ease;
+            max-width: 1000px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Header Premium Styling */
+        .header-wrapper {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .badge-premium {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.15), rgba(0, 242, 254, 0.15));
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            color: var(--accent-primary);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.1);
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* Sorting Flow Visualizer */
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #cbd5e1;
+        }
+
+        .flow-step.highlight {
+            border-color: rgba(0, 242, 254, 0.4);
+            color: var(--accent-primary);
+            background: rgba(0, 242, 254, 0.05);
+        }
+
+        .flow-arrow {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 12px;
+        }
+
+        /* Form Controls */
+        .form-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label i {
+            color: var(--accent-secondary);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            color: #475569;
+            font-size: 16px;
+            transition: color 0.3s;
+        }
+
+        input[type="text"] {
+            padding-left: 48px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 16px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.15),
+                        inset 0 2px 4px rgba(0, 0, 0, 0.4);
+            background: rgba(7, 10, 15, 0.8);
+        }
+
+        input[type="text"]:focus + i {
+            color: var(--accent-primary);
+        }
+
+        textarea {
+            height: 160px;
+            resize: vertical;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .divider-container {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 10px 0;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 600;
             letter-spacing: 1px;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 204, 0.4);
+        .divider-container::before, .divider-container::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
         }
 
-        .category-section {
-            margin-bottom: 45px;
-        }
+        .divider-container:not(:empty)::before { margin-right: .5em; }
+        .divider-container:not(:empty)::after { margin-left: .5em; }
 
-        .category-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-            border-left: 5px solid var(--accent-neon);
-            padding-left: 15px;
-            margin-bottom: 20px;
+        /* Actions Button Lounge */
+        .btn-layout {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: linear-gradient(90deg, rgba(31, 40, 51, 0.6), transparent);
-            padding-top: 8px;
-            padding-bottom: 8px;
-            border-radius: 0 8px 8px 0;
+            gap: 16px;
+            margin-top: 10px;
         }
 
-        .category-count {
-            font-size: 1rem;
-            background-color: var(--accent-neon);
-            color: #000;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-
-        .channels-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .channel-card {
-            background-color: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 20px 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s, box-shadow 0.3s;
+        button {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-        }
-
-        .channel-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--accent-neon);
-            box-shadow: 0 10px 20px rgba(0, 255, 204, 0.15);
-        }
-
-        .channel-thumb {
-            width: 75px;
-            height: 75px;
-            object-fit: contain;
-            background-color: #0b0c10;
-            border-radius: 50%;
-            border: 2px solid #30363d;
-            padding: 5px;
-            margin-bottom: 15px;
-            transition: border-color 0.3s;
-        }
-
-        .channel-card:hover .channel-thumb {
-            border-color: var(--accent-neon);
-        }
-
-        .channel-title {
-            font-size: 1rem;
+            gap: 8px;
+            border-radius: 14px;
+            padding: 16px 28px;
+            font-size: 14px;
             font-weight: 600;
-            color: var(--text-main);
-            word-break: break-word;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            header h1 { font-size: 1.8rem; }
-            .channels-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-            .channel-thumb { width: 60px; height: 60px; }
-            .channel-title { font-size: 0.9rem; }
+        .btn-primary {
+            flex: 2;
+            background: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
+            border: none;
+            color: #070a0f;
+            box-shadow: 0 8px 24px rgba(0, 242, 254, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 242, 254, 0.45);
+            filter: brightness(1.05);
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        /* Luxury Output Console */
+        .output-wrapper {
+            margin-top: 40px;
+            display: none;
+            animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .output-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .analytics-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .analytics-pill i {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .btn-copy {
+            padding: 10px 20px;
+            font-size: 12px;
+            border-radius: 10px;
+            background: rgba(0, 242, 254, 0.06);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            color: var(--accent-primary);
+        }
+
+        .btn-copy:hover {
+            background: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
+            color: #070a0f;
+            border-color: transparent;
+        }
+
+        .console-box {
+            position: relative;
+            background: #05070c;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: inset 0 4px 20px rgba(0,0,0,0.8);
+        }
+
+        pre {
+            max-height: 480px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: #38bdf8;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.5;
+        }
+
+        pre::-webkit-scrollbar {
+            width: 8px;
+        }
+        pre::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        pre::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        pre::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 242, 254, 0.3);
+        }
+
+        @media (max-width: 640px) {
+            .container { padding: 24px; }
+            h2 { font-size: 24px; }
+            .btn-layout { flex-direction: column-reverse; }
+            button { width: 100%; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>Smart M3U Sorter</h1>
-        <p>Automatic Category & Duplicate Filtering Based on Channel Names</p>
-    </header>
-
-    <div class="input-box-wrapper">
-        <div class="input-group">
-            <label for="m3uUrl">Option 1: Paste M3U Playlist URL / Link</label>
-            <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u">
+    <div class="header-wrapper">
+        <div class="badge-premium">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Auto Smart Engine v2.5
         </div>
+        <h2>M3U TO IPTV JSON STUDIO</h2>
+        <div class="subtitle">আপনার এলোমেলো প্লেলিস্টকে এক ক্লিকেই সাজিয়ে নিন আন্তর্জাতিক মানদণ্ডে</div>
         
-        <div class="divider">OR</div>
-
+        <div class="flow-container">
+            <div class="flow-step highlight"><i class="fa-solid fa-trophy"></i> Sports</div>
+            <div class="flow-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            <div class="flow-step"><i class="fa-solid fa-flag"></i> Bangla</div>
+            <div class="flow-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            <div class="flow-step"><i class="fa-solid fa-film"></i> Indian</div>
+            <div class="flow-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            <div class="flow-step"><i class="fa-solid fa-music"></i> Music</div>
+            <div class="flow-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            <div class="flow-step">Others</div>
+        </div>
+    </div>
+    
+    <div class="form-section">
         <div class="input-group">
-            <label for="m3uRawData">Option 2: Paste Raw M3U Text Data</label>
-            <textarea id="m3uRawData" placeholder="#EXTM3U&#10;#EXTINF:-1 tvg-logo='https://example.com/logo.png', T Sports HD&#10;http://example.com/stream.m3u8"></textarea>
+            <label for="m3uUrl"><i class="fa-solid fa-link"></i> Playlist URL বা দূরবর্তী লিঙ্ক</label>
+            <div class="input-wrapper">
+                <input type="text" id="m3uUrl" placeholder="https://domain.com/live/playlist.m3u">
+                <i class="fa-solid fa-globe"></i>
+            </div>
         </div>
 
-        <button onclick="loadAndProcessIPTV()">Filter and Load Channels</button>
+        <div class="divider-container">অথবা সরাসরি র কোড পেস্ট করুন</div>
+
+        <div class="input-group">
+            <label for="m3uContent"><i class="fa-solid fa-code"></i> M3U Raw Data / টেক্সট ইনপুট</label>
+            <textarea id="m3uContent" placeholder="#EXTM3U&#10;#EXTINF:-1 tvg-logo=&quot;https://i.postimg.cc/nzbd170h/T-sports.png&quot;,T Sports&#10;https://tvsen7.aynaott.com/tsports-hd/index.m3u8"></textarea>
+        </div>
+
+        <div class="btn-layout">
+            <button class="btn-secondary" onclick="clearAll()"><i class="fa-solid fa-trash-can"></i> Clear</button>
+            <button class="btn-primary" onclick="processM3U()"><i class="fa-solid fa-bolt"></i> Convert & Optimize</button>
+        </div>
     </div>
 
-    <!-- Output sections will render here -->
-    <div id="iptvOutput"></div>
+    <div class="output-wrapper" id="outputArea">
+        <div class="output-bar">
+            <div class="analytics-pill">
+                <i class="fa-solid fa-circle-check"></i> <span id="channelCount">Channels Processed: 0</span>
+            </div>
+            <button class="btn-copy" onclick="copyJson()"><i class="fa-solid fa-copy"></i> Copy JSON</button>
+        </div>
+        <div class="console-box">
+            <pre id="jsonOutput"></pre>
+        </div>
+    </div>
 </div>
 
 <script>
-async function loadAndProcessIPTV() {
-    const m3uUrl = document.getElementById('m3uUrl').value.trim();
-    const rawData = document.getElementById('m3uRawData').value.trim();
-    let playlistContent = "";
+    const PLAYER_BASE_URL = "https://rs-player.netlify.app/jw-player?url=";
 
-    // 1. Determine Input Type (Link or Text)
-    if (m3uUrl) {
-        try {
-            const response = await fetch(m3uUrl);
-            if (!response.ok) throw new Error('Network response was not ok');
-            playlistContent = await response.text();
-        } catch (error) {
-            alert('Failed to fetch M3U link. Make sure the URL is correct and CORS is enabled.');
-            console.error(error);
+    async function processM3U() {
+        const urlInput = document.getElementById('m3uUrl').value.trim();
+        const textInput = document.getElementById('m3uContent').value.trim();
+        let m3uRawData = "";
+
+        if (urlInput) {
+            try {
+                document.getElementById('jsonOutput').textContent = "প্লেলিস্ট ডাটা ডাউনলোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...";
+                document.getElementById('outputArea').style.display = 'block';
+                
+                const response = await fetch(urlInput);
+                if (!response.ok) throw new Error('Network response failure');
+                m3uRawData = await response.text();
+            } catch (error) {
+                alert("নিরাপত্তা জনিত কারণে (CORS Policy) সরাসরি URL ফেচ ব্লক হয়েছে। অনুগ্রহ করে m3u ফাইলের ভেতরের সব লেখা কপি করে 'M3U Raw Data' বক্সে পেস্ট করুন।");
+                document.getElementById('outputArea').style.display = 'none';
+                return;
+            }
+        } else if (textInput) {
+            m3uRawData = textInput;
+        } else {
+            alert("অনুগ্রহ করে একটি সঠিক M3U লিঙ্ক প্রদান করুন অথবা র টেক্সট পেস্ট করুন!");
             return;
         }
-    } else if (rawData) {
-        playlistContent = rawData;
-    } else {
-        alert('Please provide either an M3U Link or paste Raw M3U Data!');
-        return;
+
+        const sortedJsonResult = parseAndSortM3U(m3uRawData);
+        
+        document.getElementById('jsonOutput').textContent = JSON.stringify(sortedJsonResult, null, 2);
+        document.getElementById('channelCount').textContent = `Total Channels Sorted: ${sortedJsonResult.length}`;
+        document.getElementById('outputArea').style.display = 'block';
+        
+        document.getElementById('outputArea').scrollIntoView({ behavior: 'smooth' });
     }
 
-    const lines = playlistContent.split('\n');
-    const parsedList = [];
-    let tempChannel = null;
+    function parseAndSortM3U(content) {
+        const lines = content.split('\n');
+        const playlist = [];
+        let currentItem = null;
 
-    // 2. M3U Parsing Line-by-Line
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
+        const regexLogo = /tvg-logo="([^"]+)"/;
+        const regexGroup = /group-title="([^"]+)"/;
 
-        if (line.startsWith('#EXTINF:')) {
-            tempChannel = {};
-            
-            // Extract Logo
-            const logoMatch = line.match(/tvg-logo="([^"]+)"/) || line.match(/tvg-logo='([^']+)'/);
-            tempChannel.logo = logoMatch ? logoMatch[1] : '';
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
 
-            // Extract Name (after the last comma)
-            const commaPos = line.lastIndexOf(',');
-            tempChannel.name = commaPos !== -1 ? line.substring(commaPos + 1).trim() : 'Unknown Channel';
-        } 
-        else if (line.startsWith('http://') || line.startsWith('https://')) {
-            if (tempChannel) {
-                tempChannel.url = line;
-                parsedList.push(tempChannel);
-                tempChannel = null;
+            if (line.startsWith('#EXTINF:')) {
+                currentItem = {};
+                
+                const logoMatch = line.match(regexLogo);
+                const groupMatch = line.match(regexGroup);
+                
+                currentItem.image = logoMatch ? logoMatch[1] : "";
+                currentItem.rawGroup = groupMatch ? groupMatch[1].toLowerCase() : "";
+                
+                const commaIndex = line.lastIndexOf(',');
+                const displayName = commaIndex !== -1 ? line.substring(commaIndex + 1).trim() : "Unnamed Channel";
+                currentItem.name = displayName;
+
+            } else if (line && !line.startsWith('#')) {
+                if (currentItem) {
+                    currentItem.url = PLAYER_BASE_URL + line;
+                    playlist.push(currentItem);
+                    currentItem = null;
+                }
             }
         }
+
+        // Advanced Category Smart Sorting Priority Engine
+        return playlist.sort((a, b) => {
+            return getPriority(a) - getPriority(b);
+        }).map(item => {
+            return {
+                name: item.name,
+                image: item.image,
+                url: item.url
+            };
+        });
     }
 
-    // 3. Initialize Category Buckets
-    const categories = {
-        sports: [],
-        bangla: [],
-        indian: [],
-        music: [],
-        others: []
-    };
+    function getPriority(item) {
+        const name = item.name.toLowerCase();
+        const group = item.rawGroup;
 
-    const trackedNames = new Set();
-
-    // 4. Filtering Logic based purely on Channel Name keywords
-    parsedList.forEach(channel => {
-        const cleanedName = channel.name.replace(/\s+/g, ' ').trim();
-        const lowerName = cleanedName.toLowerCase();
-
-        // Duplicate removal
-        if (!lowerName || trackedNames.has(lowerName)) return;
-        trackedNames.add(lowerName);
-
-        // A. Sports Channels
-        if (
-            lowerName.includes('sports') || lowerName.includes('sport') || lowerName.includes('t sports') || 
-            lowerName.includes('gazi tv') || lowerName.includes('gtv') || lowerName.includes('star sports') || 
-            lowerName.includes('sony ten') || lowerName.includes('willow') || lowerName.includes('cricket') || 
-            lowerName.includes('football') || lowerName.includes('ten 1') || lowerName.includes('ten 2') || 
-            lowerName.includes('ten 3') || lowerName.includes('sony liv') || lowerName.includes('wwe')
-        ) {
-            categories.sports.push(channel);
-        } 
-        // B. Bangladeshi Channels
-        else if (
-            lowerName.includes('somoy') || lowerName.includes('jamuna') || lowerName.includes('independent') || 
-            lowerName.includes('channel i') || lowerName.includes('atn') || lowerName.includes('ntv') || 
-            lowerName.includes('rtv') || lowerName.includes('ekattor') || lowerName.includes('deepto') || 
-            lowerName.includes('bangla') || lowerName.includes('bttv') || lowerName.includes('nagorik') || 
-            lowerName.includes('duronto') || lowerName.includes('news24') || lowerName.includes('desh tv') ||
-            lowerName.includes('boishakhi') || lowerName.includes('bwtv') || lowerName.includes('maasranga')
-        ) {
-            categories.bangla.push(channel);
-        } 
-        // C. Indian Channels
-        else if (
-            lowerName.includes('star plus') || lowerName.includes('sony tv') || lowerName.includes('colors') || 
-            lowerName.includes('zee tv') || lowerName.includes('star gold') || lowerName.includes('sony max') || 
-            lowerName.includes('zee cinema') || lowerName.includes('sab tv') || lowerName.includes('star utsav') ||
-            lowerName.includes('sony pal') || lowerName.includes('bindass') || lowerName.includes('colors rishtey')
-        ) {
-            categories.indian.push(channel);
-        } 
-        // D. Music Channels
-        else if (
-            lowerName.includes('music') || lowerName.includes('musiq') || lowerName.includes('mtv') || 
-            lowerName.includes('9xm') || lowerName.includes('zoom') || lowerName.includes('b4u music') || 
-            lowerName.includes('sangeet') || lowerName.includes('v h1')
-        ) {
-            categories.music.push(channel);
-        } 
-        // E. Other Channels
-        else {
-            categories.others.push(channel);
+        // Priority 1: Sports & Live Events
+        if (group.includes('sport') || name.includes('sport') || name.includes('vs') || name.includes('ipl') || name.includes('willow') || name.includes('cricket') || name.includes('football')) {
+            return 1;
         }
-    });
+        
+        // Priority 2: Premium Bangla Local Channels (BD Channels & News)
+        if (group.includes('bangla') || group.includes('bd') || name.includes('tv') || name.includes('news') || name.includes('vision') || name.includes('deepto') || name.includes('maasranga') || name.includes('btv') || name.includes('ekushe')) {
+            if (!name.includes('zee') && !name.includes('star') && !name.includes('jalsha') && !name.includes('sananda')) {
+                return 2;
+            }
+        }
 
-    // 5. Render Output UI (Sequence: Sports -> Bangla -> Indian -> Music -> Others)
-    const outputDiv = document.getElementById('iptvOutput');
-    outputDiv.innerHTML = ''; 
+        // Priority 3: Premium Indian/Regional Entertainment Networks
+        if (group.includes('india') || name.includes('zee') || name.includes('star') || name.includes('jalsha') || name.includes('sananda') || name.includes('enterr10')) {
+            return 3;
+        }
 
-    buildCategoryHTML('Sports Channels', categories.sports, outputDiv);
-    buildCategoryHTML('Bangladeshi Channels', categories.bangla, outputDiv);
-    buildCategoryHTML('Indian Channels', categories.indian, outputDiv);
-    buildCategoryHTML('Music Channels', categories.music, outputDiv);
-    buildCategoryHTML('Other Channels', categories.others, outputDiv);
-}
+        // Priority 4: Dedicated Music Channels
+        if (group.includes('music') || name.includes('music') || name.includes('gaan') || name.includes('song') || name.includes('hits')) {
+            return 4;
+        }
 
-function buildCategoryHTML(title, channelArray, targetContainer) {
-    if (channelArray.length === 0) return; 
+        // Priority 5: Miscellaneous / Global
+        return 5;
+    }
 
-    let sectionHTML = `
-        <div class="category-section">
-            <div class="category-header">
-                <span>${title}</span>
-                <span class="category-count">${channelArray.length}</span>
-            </div>
-            <div class="channels-grid">
-    `;
+    function copyJson() {
+        const jsonText = document.getElementById('jsonOutput').textContent;
+        navigator.clipboard.writeText(jsonText).then(() => {
+            alert("সফলভাবে ক্লিপবোর্ডে কপি হয়েছে! এবার আপনার প্লেয়ার কনফিগারেশনে পেস্ট করতে পারেন।");
+        }).catch(err => {
+            alert("কপি করতে সমস্যা হয়েছে, অনুগ্রহ করে ম্যানুয়ালি সিলেক্ট করে কপি করুন।");
+        });
+    }
 
-    channelArray.forEach(channel => {
-        const logoUrl = channel.logo ? channel.logo : 'https://via.placeholder.com/75/1f2833/00ffcc?text=TV';
-        sectionHTML += `
-            <div class="channel-card" onclick="alert('Stream URL: ${channel.url}')">
-                <img class="channel-thumb" src="${logoUrl}" onerror="this.src='https://via.placeholder.com/75/1f2833/00ffcc?text=TV'" alt="logo">
-                <div class="channel-title">${channel.name}</div>
-            </div>
-        `;
-    });
-
-    sectionHTML += `</div></div>`;
-    targetContainer.innerHTML += sectionHTML;
-}
+    function clearAll() {
+        document.getElementById('m3uUrl').value = '';
+        document.getElementById('m3uContent').value = '';
+        document.getElementById('outputArea').style.display = 'none';
+    }
 </script>
 
 </body>
